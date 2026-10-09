@@ -4,20 +4,20 @@ import { scanReceipt, scanEnvelope } from './ocr.js';
 
 const $ = s => document.querySelector(s);
 
-const RECEIPT_INPUTS = [
-  ['cash', 'Cash'],
-  ['credit', 'Credit Card'],
-  ['gratuity', 'Gratuity (F)'],
-  ['offline', 'Offline C.C.'],
-  ['subtotal', 'Subtotal (E)'],
-  ['total', 'Total Amount (G)'],
+// Rows of inputs, in the order they appear on the receipt / envelope.
+const RECEIPT_ROWS = [
+  [['subtotal', 'Subtotal (E)'], ['gratuity', 'Gratuity (F)'], ['total', 'Total (G)']],
+  'line',
+  [['cash', 'Cash'], ['credit', 'Credit Card'], ['offline', 'Offline C.C.']],
 ];
-const LUNCH_INPUTS = [
-  ['cash', 'Lunch cash'],
-  ['cardSales', 'Lunch card (sales)'],
-  ['creditTips', 'Lunch credit tips'],
-  ['cashTips', 'Lunch cash tips'],
+const LUNCH_ROWS = [
+  [['cash', 'Lunch cash']],
+  [['cardSales', 'Lunch card sales'], ['creditTips', 'Lunch credit tips']],
+  [['cashTips', 'Lunch cash tips']],
 ];
+const LUNCH_INPUTS = LUNCH_ROWS.flat();
+
+const SERVER_NAMES = ['Aiden', 'Arllany', 'Jeisler', 'Lisbeth', 'Nathalie', 'Skye', 'Vanessa', 'Zuleyma'];
 
 const today = () => {
   const d = new Date();
@@ -46,11 +46,11 @@ function save() {
 
 // ---------- rendering inputs ----------
 
-function fieldsHTML(group, defs) {
-  return defs.map(([k, label]) => `
+function fieldsHTML(group, rows, cols) {
+  return rows.map(row => row === 'line' ? '<hr class="divider">' : `<div class="frow" style="--cols:${cols}">` + row.map(([k, label]) => `
     <label class="field"><span>${label}</span>
       <input inputmode="decimal" data-group="${group}" data-k="${k}" placeholder="0.00">
-      <span class="tag" data-tag="${group}.${k}"></span></label>`).join('') +
+      <span class="tag" data-tag="${group}.${k}"></span></label>`).join('') + '</div>').join('') +
     `<div class="legend"><span><i style="background:var(--read)"></i>read from photo</span><span><i style="background:var(--fixed)"></i>auto-corrected – please check</span></div>`;
 }
 
@@ -66,14 +66,22 @@ function fillInputs() {
   $('#cashTips').value = state.cashTips;
 }
 
+function nameOptions(current) {
+  const extra = store.get('closing:extraNames') || [];
+  const names = [...new Set([...SERVER_NAMES, ...extra, ...(current ? [current] : [])])].sort((a, b) => a.localeCompare(b));
+  return `<option value="">Server…</option>` +
+    names.map(n => `<option value="${esc(n)}"${n === current ? ' selected' : ''}>${esc(n)}</option>`).join('') +
+    `<option value="__other">Other…</option>`;
+}
+
 function renderServers() {
   $('#servers').innerHTML = state.servers.map((s, i) => `
     <div class="server">
-      <input placeholder="Name" value="${esc(s.name)}" data-i="${i}" data-f="name" autocapitalize="words" list="names">
+      <select data-i="${i}" data-f="name" aria-label="Server">${nameOptions(s.name)}</select>
       <input placeholder="Hours" inputmode="decimal" value="${esc(s.hours)}" data-i="${i}" data-f="hours">
       <button data-up="${i}" aria-label="Move up" ${i === 0 ? 'disabled' : ''}>↑</button>
       <button data-del="${i}" aria-label="Remove">✕</button>
-    </div>`).join('') + `<datalist id="names">${(store.get('closing:names') || []).map(n => `<option value="${esc(n)}">`).join('')}</datalist>`;
+    </div>`).join('');
 }
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -223,18 +231,30 @@ document.addEventListener('input', e => {
     delete state.tags[`${t.dataset.group}.${t.dataset.k}`];
     t.className = '';
   } else if (t.id === 'cashTips') state.cashTips = t.value;
-  else if (t.dataset.f) state.servers[+t.dataset.i][t.dataset.f] = t.value;
+  else if (t.dataset.f) {
+    if (t.value === '__other') return;
+    state.servers[+t.dataset.i][t.dataset.f] = t.value;
+  }
   else return;
   save();
   compute();
 });
 
+// "Other…" in the server list: type a name once, it stays in the list on this phone.
 document.addEventListener('change', e => {
-  if (e.target.dataset.f === 'name') {
-    const names = new Set(store.get('closing:names') || []);
-    state.servers.forEach(s => s.name && names.add(s.name.trim()));
-    store.set('closing:names', [...names].sort());
+  const t = e.target;
+  if (t.dataset.f !== 'name' || t.value !== '__other') return;
+  const i = +t.dataset.i;
+  const name = (prompt('Server name') || '').trim();
+  if (name) {
+    const extra = new Set(store.get('closing:extraNames') || []);
+    if (!SERVER_NAMES.includes(name)) extra.add(name);
+    store.set('closing:extraNames', [...extra]);
+    state.servers[i].name = name;
+    save();
   }
+  renderServers();
+  compute();
 });
 
 $('#servers').addEventListener('click', e => {
@@ -324,8 +344,8 @@ function wirePhoto(inputSel, boxSel, scanFn, group, mapping, { requireConfirmed 
 
 // ---------- init ----------
 
-$('#receiptFields').innerHTML = fieldsHTML('receipt', RECEIPT_INPUTS);
-$('#lunchFields').innerHTML = fieldsHTML('lunch', LUNCH_INPUTS);
+$('#receiptFields').innerHTML = fieldsHTML('receipt', RECEIPT_ROWS, 3);
+$('#lunchFields').innerHTML = fieldsHTML('lunch', LUNCH_ROWS, 2);
 wirePhoto('#receiptPhoto', '#receiptScan', scanReceipt, 'receipt',
   { cash: 'cash', credit: 'credit', gratuity: 'gratuity', offline: 'offline', subtotal: 'subtotal', total: 'total' });
 wirePhoto('#envelopePhoto', '#envelopeScan', scanEnvelope, 'lunch',

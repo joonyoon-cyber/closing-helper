@@ -18,7 +18,8 @@ and nothing is uploaded anywhere.
    phone, they fill in automatically. Otherwise photograph the envelope or type
    them in: lunch cash, lunch card sales, lunch credit tips, lunch cash tips.
 4. Type **cash tips** for the shift.
-5. Add **servers and hours**. The last server gets the remainder so the
+5. Pick **servers** from the list (*Other…* adds a new name on that phone) and
+   type their **hours**. The last server gets the remainder so the
    split always adds up to the cent; use ↑ to change who is last. Leave hours
    blank to split evenly.
 6. Copy the yellow box onto the envelope. *Show the math* lists every step.

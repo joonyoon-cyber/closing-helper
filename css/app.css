@@ -33,9 +33,11 @@ button.secondary { background: transparent; border: 1px solid var(--line); color
 .scan img { width: 96px; max-height: 140px; object-fit: contain; border-radius: 8px; border: 1px solid var(--line); background: #000; cursor: zoom-in; }
 .scan img.big { position: fixed; inset: 0; width: 100vw; height: 100vh; max-height: none; z-index: 20; border-radius: 0; cursor: zoom-out; }
 .status { margin: 0; font-size: 14px; color: var(--muted); }
-.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.fields { display: flex; flex-direction: column; gap: 8px; }
+.frow { display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); gap: 8px; }
+.divider { border: 0; border-top: 1px dashed var(--line); margin: 2px 0; width: 100%; }
 .field { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--muted); }
-.field input { font-size: 18px; padding: 9px 10px; border-radius: 9px; border: 1px solid var(--line); background: var(--card); color: var(--ink); width: 100%; font-variant-numeric: tabular-nums; }
+.field input { font-size: 17px; padding: 9px 8px; border-radius: 9px; border: 1px solid var(--line); background: var(--card); color: var(--ink); width: 100%; font-variant-numeric: tabular-nums; }
 .field input.read { background: var(--read); }
 .field input.calc { background: var(--calc); }
 .field input.fixed { background: var(--fixed); }
@@ -47,7 +49,7 @@ button.secondary { background: transparent; border: 1px solid var(--line); color
 .checks .ok { color: var(--ok); } .checks .bad { color: var(--bad); font-weight: 600; } .checks .warn { color: var(--warn); }
 .hint { font-size: 13px; color: var(--muted); margin: 0 0 8px; }
 .server { display: grid; grid-template-columns: 1fr 76px 36px 36px; gap: 6px; margin-bottom: 6px; }
-.server input { font-size: 17px; padding: 8px; border-radius: 9px; border: 1px solid var(--line); background: var(--card); color: var(--ink); min-width: 0; }
+.server input, .server select { font-size: 17px; padding: 8px; border-radius: 9px; border: 1px solid var(--line); background: var(--card); color: var(--ink); min-width: 0; }
 .server button { border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 9px; font-size: 16px; }
 .result { background: var(--env); color: var(--env-ink); border-color: transparent; }
 #envelope { font: 20px/1.55 "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive; font-variant-numeric: tabular-nums; }
