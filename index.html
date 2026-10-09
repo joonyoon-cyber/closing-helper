@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#d9a441">
+<title>Closing Helper</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="top">
+  <h1>Closing Helper</h1>
+  <div class="row">
+    <input type="date" id="date" aria-label="Date">
+    <div class="seg" role="tablist">
+      <button data-mode="lunch" role="tab">Lunch</button>
+      <button data-mode="dinner" role="tab">Dinner</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <h2><span class="step">1</span> Receipt <small id="receiptHint"></small></h2>
+    <label class="photo-btn">
+      <input type="file" accept="image/*" id="receiptPhoto" hidden>
+      📷 Take photo of receipt
+    </label>
+    <div class="scan" id="receiptScan" hidden><img alt="Receipt photo"><p class="status"></p></div>
+    <div class="fields" id="receiptFields"></div>
+    <ul class="checks" id="receiptChecks"></ul>
+  </section>
+
+  <section class="card" id="lunchSection">
+    <h2><span class="step">2</span> Lunch numbers <small>(left side of envelope)</small></h2>
+    <button class="secondary" id="useSavedLunch" hidden>↺ Use lunch closing saved on this phone</button>
+    <label class="photo-btn">
+      <input type="file" accept="image/*" id="envelopePhoto" hidden>
+      📷 Take photo of envelope
+    </label>
+    <div class="scan" id="envelopeScan" hidden><img alt="Envelope photo"><p class="status"></p></div>
+    <div class="fields" id="lunchFields"></div>
+    <ul class="checks" id="lunchChecks"></ul>
+  </section>
+
+  <section class="card">
+    <h2><span class="step" id="tipsStep">3</span> <span id="cashTipsTitle">Cash tips</span></h2>
+    <div class="fields">
+      <label class="field"><span>Cash tips</span><input inputmode="decimal" id="cashTips" placeholder="0.00"></label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step" id="serversStep">4</span> Servers &amp; hours</h2>
+    <p class="hint">Leave hours blank to split evenly. The <b>last</b> server gets the remainder so tips add up exactly.</p>
+    <div id="servers"></div>
+    <button class="secondary" id="addServer">+ Add server</button>
+  </section>
+
+  <section class="card result" id="result">
+    <h2>Write on the envelope</h2>
+    <div id="envelope"></div>
+    <ul class="checks" id="resultChecks"></ul>
+    <details><summary>Show the math</summary><ol id="steps"></ol></details>
+  </section>
+
+  <div class="footer-actions">
+    <button class="secondary" id="clearDay">Clear this shift</button>
+  </div>
+</main>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
