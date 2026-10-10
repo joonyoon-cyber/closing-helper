@@ -2,24 +2,28 @@
 :root {
   --bg: #f6f1e7; --card: #fff; --ink: #1f1b16; --muted: #6f665b; --line: #e4dccd;
   --accent: #b7791f; --accent-ink: #fff; --env: #e9b45b; --env-ink: #1b1a3a;
-  --brand: #bf1e2d;
+  --band: #e9b45b; --band-ink: #111;
   --ok: #2f7d32; --bad: #c62828; --warn: #a15c00;
   --read: #e6f4ea; --calc: #fff4d6; --fixed: #ffe2cc;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #17140f; --card: #221e17; --ink: #f2ece2; --muted: #b0a696; --line: #3a3328;
-    --brand: #e0505d;
     --env: #6b4f1d; --env-ink: #fff6e0; --read: #1d3324; --calc: #3a3016; --fixed: #43291a;
   }
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding-bottom: env(safe-area-inset-bottom); }
-.top { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: calc(10px + env(safe-area-inset-top)) 16px 10px; border-bottom: 1px solid var(--line); }
+.top { position: sticky; top: 0; z-index: 5; background: var(--band); color: var(--band-ink); padding: calc(10px + env(safe-area-inset-top)) 16px 12px; box-shadow: 0 1px 0 rgba(0,0,0,.12); }
 .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
 .brand img { height: 52px; width: auto; display: block; }
-.brand h1 { margin: 0; font-size: 20px; padding-left: 12px; border-left: 2px solid var(--brand); color: var(--brand); letter-spacing: .02em; }
+.brand h1 { margin: 0; padding-left: 14px; border-left: 1.5px solid var(--band-ink); font: 700 28px/1.05 "Cormorant Garamond", Georgia, "Times New Roman", serif; letter-spacing: .01em; }
+/* Header controls on the yellow band */
+.top input[type=date] { background: #fffdf7; color: #1f1b16; border-color: rgba(0,0,0,.25); }
+.top .seg { border-color: var(--band-ink); }
+.top .seg button { color: var(--band-ink); }
+.top .seg button.on { background: var(--band-ink); color: var(--band); }
 .row { display: flex; gap: 8px; align-items: center; }
 input[type=date] { flex: 1; min-width: 0; font-size: 16px; padding: 8px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--ink); }
 .seg { display: flex; border: 1px solid var(--accent); border-radius: 10px; overflow: hidden; }
