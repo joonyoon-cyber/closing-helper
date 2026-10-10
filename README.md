@@ -28,7 +28,10 @@ Everything is saved on the phone per date and shift, so a reload loses nothing.
 
 ## The math
 
-Card money on the receipt = Credit Card + Offline C.C. + Debit.
+Card money on the receipt = Credit Card + **Other payments** (Offline C.C. +
+Debit + FreedomPay + WeChat Pay + Alipay). Gift Card is not included, so on a
+day with gift card sales "Cash + Credit + Other payments = Total (G)" won't
+match. That's expected.
 
 **Lunch** (receipt printed at end of lunch)
 

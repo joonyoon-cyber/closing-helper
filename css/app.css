@@ -56,6 +56,7 @@ button.secondary { background: transparent; border: 1px solid var(--line); color
 .checks li { padding: 3px 0; }
 .checks .ok { color: var(--ok); } .checks .bad { color: var(--bad); font-weight: 600; } .checks .warn { color: var(--warn); }
 .hint { font-size: 13px; color: var(--muted); margin: 0 0 8px; }
+.hint.small { font-size: 12px; margin: -2px 0 0; }
 .server { display: grid; grid-template-columns: 1fr 76px 36px 36px; gap: 6px; margin-bottom: 6px; }
 .server input, .server select { font-size: 17px; padding: 8px; border-radius: 9px; border: 1px solid var(--line); background: var(--card); color: var(--ink); min-width: 0; }
 .server button { border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 9px; font-size: 16px; }

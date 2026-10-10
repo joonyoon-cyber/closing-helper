@@ -42,7 +42,8 @@ export function splitTips(totalCents, servers) {
   return { rate, rows: out, equal, totalHours: noHours ? null : sumHours };
 }
 
-// Card money on the receipt = Credit Card + Offline C.C. + Debit.
+// Card money on the receipt = Credit Card + other payments (Offline C.C., Debit,
+// FreedomPay, WeChat Pay, Alipay; not Gift Card). `debit` is kept for old data.
 export function receiptCardTotal(r) {
   if (r.credit === null || r.credit === undefined) return null;
   return r.credit + z(r.offline) + z(r.debit);

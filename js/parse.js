@@ -26,7 +26,7 @@ export const RECEIPT_FIELDS = ['subtotal', 'gratuity', 'total', 'cashMinusGratui
 export const RECEIPT_EQS = [
   { label: 'Subtotal (E) + Gratuity (F) = Total (G)', terms: { subtotal: 1, gratuity: 1, total: -1 } },
   { label: 'Cash − Gratuity = line H', terms: { cash: 1, gratuity: -1, cashMinusGratuity: -1 } },
-  { label: 'Cash + Credit + Offline C.C. + Debit = Total (G)', terms: { cash: 1, credit: 1, offline: 1, debit: 1, total: -1 } },
+  { label: 'Cash + Credit + Other payments = Total (G)', terms: { cash: 1, credit: 1, offline: 1, debit: 1, total: -1 } },
 ];
 
 // Number of impossible relationships (e.g. gratuity bigger than sales).
@@ -47,6 +47,7 @@ export function parseReceipt(text) {
   let inPayments = false;
   const paymentRows = [];
   const topRows = [];
+  let extra = 0; // FreedomPay, WeChat Pay, Alipay (gift card is left out)
   for (const raw of lines) {
     const l = raw.toLowerCase();
     if (/count/.test(l) && /amo/.test(l)) { inPayments = true; continue; }
@@ -65,6 +66,7 @@ export function parseReceipt(text) {
     if (v.credit === null && /(credit|redit|edit c|it card)/.test(l)) v.credit = amt;
     else if (v.offline === null && /(offl|ffline|fline|line c)/.test(l)) v.offline = amt;
     else if (v.debit === null && /(debit|ebit)/.test(l) && !/cred/.test(l)) v.debit = amt;
+    else if (/(freedom|eedom|wechat|chat pay|alipay|lipay)/.test(l) && amt > 0) extra += amt;
     else if (v.cash === null && /(cash|ash|^sh|^.sh)\b/.test(l) && !/grat/.test(l)) v.cash = amt;
   }
   // The top section always ends with E, F, G, H.
@@ -79,6 +81,8 @@ export function parseReceipt(text) {
   // Payment rows always print in the same order: Cash, Credit, Offline, Debit.
   const order = ['cash', 'credit', 'offline', 'debit'];
   order.forEach((f, i) => { if (v[f] === null && paymentRows[i] !== undefined && !Object.values(v).includes(paymentRows[i])) v[f] = paymentRows[i]; });
+  // The app has one "Other payments" box: Offline C.C. + Debit + the others.
+  if (v.debit || extra) { v.offline = (v.offline ?? 0) + (v.debit ?? 0) + extra; v.debit = 0; }
   return v;
 }
 
@@ -194,7 +198,7 @@ function digitDiff(a, b) {
   return d + (Math.sign(a) !== Math.sign(b) ? 1 : 0);
 }
 
-// defaults: fields assumed 0 when unread (e.g. Offline C.C., Debit).
+// defaults: fields assumed 0 when unread (e.g. other payments, Debit).
 export function reconcile(read, eqs, { defaults = {}, mayBeNegative = [] } = {}) {
   const start = { ...read };
   for (const [k, d] of Object.entries(defaults)) if (start[k] === null) start[k] = d;

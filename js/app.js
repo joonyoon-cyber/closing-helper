@@ -8,7 +8,8 @@ const $ = s => document.querySelector(s);
 const RECEIPT_ROWS = [
   [['subtotal', 'Subtotal (E)'], ['gratuity', 'Gratuity (F)'], ['total', 'Total (G)']],
   'line',
-  [['cash', 'Cash'], ['credit', 'Credit Card'], ['offline', 'Offline C.C.']],
+  [['cash', 'Cash'], ['credit', 'Credit Card'], ['offline', 'Other payments']],
+  'otherNote',
 ];
 const LUNCH_ROWS = [
   [['cash', 'Lunch cash']],
@@ -47,7 +48,9 @@ function save() {
 // ---------- rendering inputs ----------
 
 function fieldsHTML(group, rows, cols) {
-  return rows.map(row => row === 'line' ? '<hr class="divider">' : `<div class="frow" style="--cols:${cols}">` + row.map(([k, label]) => `
+  return rows.map(row => row === 'line' ? '<hr class="divider">'
+    : row === 'otherNote' ? '<p class="hint small">Other payments = Offline C.C. + Debit + FreedomPay + WeChat Pay + Alipay (add up any that aren\'t 0.00). <b>Don\'t include Gift Card.</b></p>'
+    : `<div class="frow" style="--cols:${cols}">` + row.map(([k, label]) => `
     <label class="field"><span>${label}</span>
       <input inputmode="decimal" data-group="${group}" data-k="${k}" placeholder="0.00">
       <span class="tag" data-tag="${group}.${k}"></span></label>`).join('') + '</div>').join('') +
@@ -120,7 +123,11 @@ function receiptChecks(r) {
     const ks = Object.keys(eq.terms);
     if (!ks.every(k => vals[k] !== null && vals[k] !== undefined)) continue;
     const sum = ks.reduce((s, k) => s + eq.terms[k] * vals[k], 0);
-    items.push({ ok: sum === 0, label: eq.label + (sum === 0 ? '' : ` (off by ${fmt(Math.abs(sum))})`) });
+    const payments = 'offline' in eq.terms;
+    if (sum === 0) items.push({ ok: true, label: eq.label });
+    // Gift card payments are in Total (G) but not in our card/other payments.
+    else if (payments && sum < 0) items.push({ ok: null, label: `${eq.label} (off by ${fmt(-sum)}) — OK if a gift card was used; otherwise check the numbers` });
+    else items.push({ ok: false, label: `${eq.label} (off by ${fmt(Math.abs(sum))})` });
   }
   return items;
 }
@@ -158,7 +165,7 @@ function compute() {
         <div>Tips: ${fmt(o.creditTips)} + ${fmt(o.cashTips)} = ${fmt(o.tips)}</div>
         <div>C/B: ${fmt(o.cash)} + ${fmt(o.cashTips)} = ${fmt(o.cb)}</div></div>` + serversHTML(o.split);
       steps = [
-        `Card total (Credit${r.offline ? ' + Offline C.C.' : ''}) = ${fmt(o.cardTotal)}`,
+        `Card total (Credit${r.offline ? ' + other payments' : ''}) = ${fmt(o.cardTotal)}`,
         `Card sales = card total − gratuity = ${fmt(o.cardTotal)} − ${fmt(o.creditTips)} = ${fmt(o.cardSales)}`,
         `Total sales = cash + card sales = ${fmt(o.cash)} + ${fmt(o.cardSales)} = ${fmt(o.total)}`,
         `Tips = credit tips + cash tips = ${fmt(o.creditTips)} + ${fmt(o.cashTips)} = ${fmt(o.tips)}`,
@@ -195,7 +202,7 @@ function compute() {
         `All-day C/B = dinner C/B + lunch C/B = ${fmt(o.cb)} + ${fmt(o.lunch.cb)} = ${fmt(o.allCB)}`,
         `Dinner credit tips = gratuity − lunch card tips = ${fmt(r.gratuity)} − ${fmt(o.lunch.creditTips)} = ${fmt(o.creditTips)}`,
         `All dinner tips = dinner credit tips + cash tips = ${fmt(o.creditTips)} + ${fmt(o.cashTips)} = ${fmt(o.tips)}`,
-        `Dinner credit total = credit${r.offline ? ' (incl. Offline C.C.)' : ''} − lunch card total = ${fmt(dayCard)} − ${fmt(o.lunch.cardTotal)} = ${fmt(o.cardTotal)}`,
+        `Dinner credit total = credit${r.offline ? ' (incl. other payments)' : ''} − lunch card total = ${fmt(dayCard)} − ${fmt(o.lunch.cardTotal)} = ${fmt(o.cardTotal)}`,
         `Dinner card sales = dinner credit total − dinner credit tips = ${fmt(o.cardTotal)} − ${fmt(o.creditTips)} = ${fmt(o.cardSales)}`,
         `Dinner total sales = dinner card sales + dinner cash = ${fmt(o.cardSales)} + ${fmt(o.cash)} = ${fmt(o.total)}`,
         `All-day sales = dinner total + lunch total = ${fmt(o.total)} + ${fmt(o.lunch.total)} = ${fmt(o.allSales)}`,
@@ -204,6 +211,12 @@ function compute() {
       checks = o.checks;
     }
   }
+  // Gift card sales are in Subtotal (E) but not in cash or card money.
+  const cardMoney = receiptCardTotal(r);
+  const giftGap = r.total != null && r.cash != null && cardMoney != null ? r.total - r.cash - cardMoney : 0;
+  checks = checks.map(c => (!c.ok && c.a != null && giftGap > 0 && c.b - c.a === giftGap)
+    ? { ok: null, label: `${c.label}: short by ${fmt(giftGap)}, same as the gift card gap — OK if a gift card was used` }
+    : c);
   if (need.length) html = `<p class="empty">Still need: ${need.join(', ')}.</p>`;
   if (!state.servers.some(s => s.name || s.hours) && !need.length) checks = [...checks, { ok: null, label: 'Add servers to split the tips' }];
   $('#envelope').innerHTML = html;
