@@ -16,7 +16,7 @@ and nothing is uploaded anywhere.
    The checks underneath (E + F = G, Cash + Card = G) go red if a number is off.
 3. **Dinner only, lunch numbers**: if lunch was closed in the app on this
    phone, they fill in automatically. Otherwise photograph the envelope or type
-   them in: lunch cash, lunch card sales, lunch credit tips, lunch cash tips.
+   them in: lunch cash, lunch card sales, lunch card tips, lunch cash tips.
 4. Type **cash tips** for the shift.
 5. Pick **servers** from the list (*Other…* adds a new name on that phone) and
    type their **hours**. The last server gets the remainder so the
@@ -45,7 +45,7 @@ Card money on the receipt = Credit Card + Offline C.C. + Debit.
 2. Dinner cash = receipt cash − lunch cash
 3. Dinner C/B = dinner cash + cash tips
 4. All-day C/B = dinner C/B + lunch C/B
-5. Dinner credit tips = gratuity − lunch credit tips
+5. Dinner credit tips = gratuity − lunch card tips
 6. All dinner tips = dinner credit tips + cash tips
 7. Dinner credit total = receipt card total − lunch card total
 8. Dinner card sales = dinner credit total − dinner credit tips

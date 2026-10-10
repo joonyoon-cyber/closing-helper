@@ -12,7 +12,7 @@ const RECEIPT_ROWS = [
 ];
 const LUNCH_ROWS = [
   [['cash', 'Lunch cash']],
-  [['cardSales', 'Lunch card sales'], ['creditTips', 'Lunch credit tips']],
+  [['cardSales', 'Lunch card sales'], ['creditTips', 'Lunch card tips']],
   [['cashTips', 'Lunch cash tips']],
 ];
 const LUNCH_INPUTS = LUNCH_ROWS.flat();
@@ -193,7 +193,7 @@ function compute() {
         `Dinner cash = receipt cash − lunch cash = ${fmt(r.cash)} − ${fmt(o.lunch.cash)} = ${fmt(o.cash)}`,
         `Dinner C/B = dinner cash + cash tips = ${fmt(o.cash)} + ${fmt(o.cashTips)} = ${fmt(o.cb)}`,
         `All-day C/B = dinner C/B + lunch C/B = ${fmt(o.cb)} + ${fmt(o.lunch.cb)} = ${fmt(o.allCB)}`,
-        `Dinner credit tips = gratuity − lunch credit tips = ${fmt(r.gratuity)} − ${fmt(o.lunch.creditTips)} = ${fmt(o.creditTips)}`,
+        `Dinner credit tips = gratuity − lunch card tips = ${fmt(r.gratuity)} − ${fmt(o.lunch.creditTips)} = ${fmt(o.creditTips)}`,
         `All dinner tips = dinner credit tips + cash tips = ${fmt(o.creditTips)} + ${fmt(o.cashTips)} = ${fmt(o.tips)}`,
         `Dinner credit total = credit${r.offline ? ' (incl. Offline C.C.)' : ''} − lunch card total = ${fmt(dayCard)} − ${fmt(o.lunch.cardTotal)} = ${fmt(o.cardTotal)}`,
         `Dinner card sales = dinner credit total − dinner credit tips = ${fmt(o.cardTotal)} − ${fmt(o.creditTips)} = ${fmt(o.cardSales)}`,
