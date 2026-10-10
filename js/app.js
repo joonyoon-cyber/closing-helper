@@ -138,7 +138,9 @@ function checksHTML(items) {
 
 function serversHTML(split) {
   if (!split.rows.length) return '';
-  const head = split.rate === null ? 'split evenly' : `${split.totalHours} / ${fmt(split.rate)}` + (split.equal ? ' · same hours, split evenly' : '');
+  const head = split.noHours
+    ? `${fmt(split.rows.reduce((a, r) => a + r.tip, 0))} / ${split.rows.length} = ${fmt(split.rate)} each`
+    : `${fmt(split.rows.reduce((a, r) => a + r.tip, 0))} / ${split.totalHours} = ${fmt(split.rate)}`;
   return `<div class="sec"><div class="h">Server</div><div style="font-size:15px;opacity:.8">${head}</div>` +
     split.rows.map(s => `<div class="srv"><span>${s.hours ?? ''}</span><span>${esc(s.name)}</span><span>${fmt(s.tip)}</span></div>`).join('') + '</div>';
 }
@@ -226,12 +228,18 @@ function compute() {
 
 function splitSteps(tips, split) {
   if (!split.rows.length) return [];
-  const out = [];
-  if (split.rate !== null) out.push(`Hourly rate = ${fmt(tips)} ÷ ${split.totalHours} hrs = ${fmt(split.rate)} (cut to whole cents)`);
-  if (split.equal) out.push(`${split.rate === null ? 'No hours entered' : 'Everyone has the same hours'} → split ${fmt(tips)} evenly between ${split.rows.length}`);
-  split.rows.forEach(s => out.push(s.remainder
-    ? `${s.name || 'Last server'} (last) = ${fmt(tips)} − everyone else = ${fmt(s.tip)}`
-    : `${s.name || 'Server'} = ${split.equal ? `${fmt(tips)} ÷ ${split.rows.length}` : `${s.hours} × ${fmt(split.rate)}`} = ${fmt(s.tip)}`));
+  const out = [split.noHours
+    ? `No hours entered → ${fmt(tips)} ÷ ${split.rows.length} servers = ${fmt(split.rate)} each`
+    : `Hourly rate = ${fmt(tips)} ÷ ${split.totalHours} hrs = ${fmt(split.rate)} (cut to whole cents)`];
+  split.rows.forEach(s => {
+    const base = split.noHours ? `${fmt(s.base)}` : `${s.hours} × ${fmt(split.rate)} = ${fmt(s.base)}`;
+    out.push(`${s.name || 'Server'}: ${base}${s.extra ? ` ${s.extra > 0 ? '+' : '−'} ${fmt(Math.abs(s.extra))} leftover = ${fmt(s.tip)}` : ''}`);
+  });
+  if (split.leftover) {
+    const who = split.rows.filter(s => s.extra).map(s => s.name || 'server');
+    out.push(`Leftover from rounding: ${fmt(split.leftover)} → ${who.join(', ')}` +
+      (who.length === 1 && !split.equal ? ' (no one else has the same hours)' : ''));
+  }
   return out;
 }
 

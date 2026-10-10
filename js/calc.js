@@ -20,26 +20,40 @@ export function fmt(cents) {
 const z = v => v ?? 0;
 
 // Splits tips the way the envelopes do: the hourly rate is cut to whole
-// cents (1,131.96 / 19.5 hrs = 58.04), each server gets hours x rate, and the
-// last server gets whatever is left so the split adds up exactly.
-// No hours, or everyone with the same hours, means an even split per person.
+// cents (1,660.03 / 19.5 hrs = 85.12) and each server gets hours x rate.
+// The few cents left over from rounding go to a server whose hours nobody
+// else has, so servers with the same hours always get the same tips. If
+// everyone shares hours with someone, the leftover is spread over the last
+// server's same-hours group, and only an unavoidable cent or two can differ.
+// No hours entered means an even split per person.
 export function splitTips(totalCents, servers) {
   const rows = (servers || []).filter(s => (s.name && s.name.trim()) || Number(s.hours) > 0);
   if (!rows.length || totalCents === null) return { rate: null, rows: [], equal: false };
   const hrs = rows.map(s => Number(s.hours) || 0);
   const noHours = hrs.every(h => h === 0);
+  const weights = noHours ? rows.map(() => 1) : hrs;
+  const sumW = weights.reduce((a, b) => a + b, 0);
+  const rate = Math.floor(totalCents / sumW);
+  const tips = weights.map(w => Math.round(w * rate));
+  const leftover = totalCents - tips.reduce((a, b) => a + b, 0);
+
+  const groupOf = i => weights.map((w, j) => j).filter(j => weights[j] === weights[i]);
+  const singles = weights.map((w, i) => i).filter(i => groupOf(i).length === 1);
+  const target = singles.length ? [singles[singles.length - 1]] : groupOf(rows.length - 1);
+  const each = Math.trunc(leftover / target.length);
+  const extra = new Array(rows.length).fill(0);
+  target.forEach(i => { extra[i] += each; });
+  extra[target[target.length - 1]] += leftover - each * target.length;
+
+  const out = rows.map((s, i) => ({
+    name: s.name || '',
+    hours: noHours ? null : hrs[i],
+    base: tips[i],
+    extra: extra[i],
+    tip: tips[i] + extra[i],
+  }));
   const equal = noHours || hrs.every(h => h === hrs[0]);
-  const sumHours = hrs.reduce((a, b) => a + b, 0);
-  const rate = noHours ? null : Math.floor(totalCents / sumHours);
-  const share = Math.floor(totalCents / rows.length);
-  let given = 0;
-  const out = rows.map((s, i) => {
-    const last = i === rows.length - 1;
-    const tip = last ? totalCents - given : equal ? share : Math.round(hrs[i] * rate);
-    given += tip;
-    return { name: s.name || '', hours: noHours ? null : hrs[i], tip, remainder: last && rows.length > 1 };
-  });
-  return { rate, rows: out, equal, totalHours: noHours ? null : sumHours };
+  return { rate, rows: out, equal, noHours, leftover, totalHours: noHours ? null : sumW };
 }
 
 // Card money on the receipt = Credit Card + other payments (Offline C.C., Debit,

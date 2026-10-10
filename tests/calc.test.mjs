@@ -48,7 +48,18 @@ test('lunch close', () => {
   assert.deepEqual(r.split.rows.map(s => s.tip), [20264, 17736]);
 });
 
-test('rate is cut to whole cents; last server gets the remainder', () => {
+test('same hours get the same tips; leftover goes to someone with unique hours', () => {
+  const s = splitTips(166003, [{ name: 'A', hours: 4 }, { name: 'N', hours: 5.5 }, { name: 'V', hours: 5 }, { name: 'Z', hours: 5 }]);
+  assert.equal(s.rate, 8512);
+  assert.deepEqual(s.rows.map(r => r.tip), [34048, 46835, 42560, 42560]);
+});
+
+test('no unique hours: leftover is shared inside one same-hours group', () => {
+  const s = splitTips(10002, [{ name: 'A', hours: 5 }, { name: 'B', hours: 5 }, { name: 'C', hours: 4 }, { name: 'D', hours: 4 }]);
+  assert.deepEqual(s.rows.map(r => r.tip), [2775, 2775, 2226, 2226]);
+});
+
+test('rate is cut to whole cents', () => {
   const s = splitTips(113196, [{ name: 'A', hours: 4 }, { name: 'B', hours: 4 }, { name: 'C', hours: 4 }, { name: 'D', hours: 7.5 }]);
   assert.equal(s.rate, 5804);
   assert.deepEqual(s.rows.map(r => r.tip), [23216, 23216, 23216, 43548]);

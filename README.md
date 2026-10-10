@@ -19,9 +19,8 @@ and nothing is uploaded anywhere.
    them in: lunch cash, lunch card sales, lunch card tips, lunch cash tips.
 4. Type **cash tips** for the shift.
 5. Pick **servers** from the list (*Other…* adds a new name on that phone) and
-   type their **hours**. The last server gets the remainder so the
-   split always adds up to the cent; use ↑ to change who is last. Leave hours
-   blank to split evenly.
+   type their **hours**. The split always adds up to the cent, and servers
+   with the same hours get the same tips. Leave hours blank to split evenly.
 6. Copy the yellow box onto the envelope. *Show the math* lists every step.
 
 Everything is saved on the phone per date and shift, so a reload loses nothing.
@@ -57,9 +56,11 @@ receipt line E by exactly the gift card sales, which is also expected.
 10. All-day sales = dinner total + lunch total (must equal receipt line E)
 11. Hourly rate = all dinner tips ÷ total hours, cut to whole cents
     (1,131.96 ÷ 19.5 = 58.04)
-12. Each server = hours × rate; the last server gets all dinner tips −
-    everyone else. If nobody has hours, or everyone has the same hours,
-    the tips are split evenly per person (last server gets the leftover cents).
+12. Each server = hours × rate. The few cents left over from rounding go to
+    a server whose hours nobody else has, so servers with the same hours get
+    the same tips. If everyone shares hours with someone (e.g. all equal), the
+    leftover is spread over one same-hours group and only an unavoidable cent
+    or two can differ. No hours entered = even split.
 
 The formulas were checked against four real closings; `tests/calc.test.mjs` uses made-up numbers that follow the same rules.
 
